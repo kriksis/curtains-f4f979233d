@@ -56,8 +56,8 @@ function svg(w,s,c){
   out+=`<rect x="${wx}" y="${y(c.top)}" width="${w.w}" height="${w.h}" fill="#bfe0f0" stroke="#8a5a1f" stroke-width="4"/>`;
   out+=`<rect x="${wx-5}" y="${y(c.bottom)}" width="${w.w+10}" height="4" fill="#8a5a1f"/>`;
   // radiator hint under window
-  out+=`<rect x="${cx-w.w*0.35}" y="${y(c.bottom-15)}" width="${w.w*0.7}" height="${Math.min(60,c.bottom-18)}" fill="#c9ccd0" stroke="#777" opacity=".8"/>`;
-  out+=`<text x="${cx}" y="${y(c.bottom-15)+Math.min(60,c.bottom-18)/2+4}" text-anchor="middle" font-size="12" fill="#444">radiator (approx.)</text>`;
+  if(w.radiator!==false) out+=`<rect x="${cx-w.w*0.35}" y="${y(c.bottom-15)}" width="${w.w*0.7}" height="${Math.min(60,c.bottom-18)}" fill="#c9ccd0" stroke="#777" opacity=".8"/>`;
+  if(w.radiator!==false) out+=`<text x="${cx}" y="${y(c.bottom-15)+Math.min(60,c.bottom-18)/2+4}" text-anchor="middle" font-size="12" fill="#444">radiator (approx.)</text>`;
   // curtains
   for(const [px] of [[rl],[cx]]) out+=`<rect x="${px}" y="${rodY}" width="${pw}" height="${endY-rodY}" fill="#52796f" fill-opacity=".55" stroke="#2f5d50"/>`;
   out+=`<line x1="${rl-6}" x2="${rr+6}" y1="${rodY}" y2="${rodY}" stroke="#222" stroke-width="4"/>`;
@@ -77,8 +77,8 @@ function render(){
   tabs();
   const w=WINDOWS[cur], s=state[cur], c=calc(w,s);
   const lenNote={
-    short:"Stops ~5 cm below the sill: clears the radiator so heat isn't blocked.",
-    floor:"Floor-length (1 cm above floor): covers the radiator and traps its heat; keep curtains away from it or use a blind.",
+    short:w.radiator===false?"Stops ~5 cm below the sill.":"Stops ~5 cm below the sill: clears the radiator so heat isn't blocked.",
+    floor:w.radiator===false?"Floor-length (1 cm above floor).":"Floor-length (1 cm above floor): covers the radiator and traps its heat; keep curtains away from it or use a blind.",
     ceiling:"Rod near the ceiling (4 cm below): makes the room look taller; floor-length."
   }[s.style];
   $('#app').innerHTML=`
@@ -113,7 +113,7 @@ function render(){
    <label>Fullness (fabric width ÷ rod): <b>${s.full}×</b>
     <input type="range" min="1.5" max="2.5" step="0.1" value="${s.full}" oninput="state[cur].full=+this.value;render()"></label>
   </div>
-  <div class="card">${svg(w,s,c)}<small>To scale. Green = curtains, grey = radiator (position approximate).</small></div>
+  <div class="card">${svg(w,s,c)}<small>To scale. Green = curtains, grey = radiator where there is one (position approximate).</small></div>
   ${w.photo?`<div class="card"><img src="${w.photo}" alt="${w.name} window"></div>`:''}`;
 }
 render();
