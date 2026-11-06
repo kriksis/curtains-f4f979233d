@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="en"><head><meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Curtain plan</title>
 <style>
  body{font-family:system-ui,sans-serif;margin:0;background:#f4f1ec;color:#222}
  header{padding:12px 16px;background:#2f3e46;color:#fff;font-size:20px}
- #tabs{display:flex;gap:8px;padding:10px 12px;flex-wrap:wrap}
+ #tabs{display:flex;gap:8px;padding:10px 12px;flex-wrap:wrap;position:sticky;top:0;background:#f4f1ec;z-index:5;border-bottom:1px solid #d9d3c7}
  #tabs button{padding:8px 14px;border:0;border-radius:18px;background:#d9d3c7;font-size:15px}
  #tabs button.on{background:#52796f;color:#fff}
  main{max-width:960px;margin:auto;padding:0 12px 40px}
@@ -23,13 +23,13 @@
 <header>🪟 Curtain plan <small style="color:#cfe">(all sizes in cm)</small></header>
 <div id="tabs"></div>
 <main id="app"></main>
-<script src="windows.js"></script>
+<script src="windows.js?v=6"></script>
 <script>
 const $=s=>document.querySelector(s);
 let cur=0;
 const state=WINDOWS.map(()=>({rodAbove:10,over:20,style:"short",full:2}));
 function tabs(){
-  $('#tabs').innerHTML=WINDOWS.map((w,i)=>`<button class="${i==cur?'on':''}" onclick="cur=${i};render()">${w.name}</button>`).join('');
+  $('#tabs').innerHTML='<b style="align-self:center">Rooms:</b>'+WINDOWS.map((w,i)=>`<button class="${i==cur?'on':''}" onclick="cur=${i};render()">${w.name}</button>`).join('');
 }
 function calc(w,s){
   const top=w.ceiling-w.gap, bottom=top-w.h;           // heights from floor
