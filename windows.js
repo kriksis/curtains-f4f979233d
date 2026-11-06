@@ -6,4 +6,6 @@ const WINDOWS = [
     note: "3-pane wooden window in a deep recess, wooden sill, radiator below." },
   { name: "Living room 1", ceiling: 249, h: 129, w: 213, gap: 31.5, photo: "photos/living-room-1.jpg",
     note: "3-pane wooden window, wooden sill, radiator below. Door close to the left of the window." },
+  { name: "Living room 2", ceiling: 249, h: 129, w: 208, gap: 35, photo: "photos/living-room-2.jpg",
+    note: "3-pane wooden window, wooden sill, radiator below. Tall wardrobe close on the right; small fixture on the wall top right; thermostat on the sill." },
 ];
