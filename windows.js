@@ -10,4 +10,6 @@ const WINDOWS = [
     note: "3-pane wooden window, wooden sill, radiator below. Tall wardrobe close on the right; small fixture on the wall top right; thermostat on the sill." },
   { name: "Kitchen", ceiling: 250, h: 129, w: 145, gap: 31, radiator: false, photo: "photos/kitchen.jpg",
     note: "2-pane wooden window in a recess, wooden sill, no radiator. Walls still unfinished; planned worktop height unknown." },
+  { name: "Entrance", ceiling: 220, h: 119, w: 108, gap: 20, radiator: false, photo: "photos/entrance.jpg",
+    note: "White (PVC) window in an unfinished wall, deep recess, white sill, no radiator. Barrel and pipe by the right edge." },
 ];
