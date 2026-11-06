@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Curtain plan</title>
+<style>
+ body{font-family:system-ui,sans-serif;margin:0;background:#f4f1ec;color:#222}
+ header{padding:12px 16px;background:#2f3e46;color:#fff;font-size:20px}
+ #tabs{display:flex;gap:8px;padding:10px 12px;flex-wrap:wrap}
+ #tabs button{padding:8px 14px;border:0;border-radius:18px;background:#d9d3c7;font-size:15px}
+ #tabs button.on{background:#52796f;color:#fff}
+ main{max-width:960px;margin:auto;padding:0 12px 40px}
+ .card{background:#fff;border-radius:12px;padding:14px;margin:12px 0;box-shadow:0 1px 4px #0002}
+ .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+ .stat{background:#eef3f0;border-radius:8px;padding:8px}.stat b{display:block;font-size:22px}
+ label{display:block;margin:8px 0;font-size:14px}
+ input[type=range]{width:100%}
+ img{max-width:100%;border-radius:8px}
+ svg{width:100%;height:auto;max-height:620px;background:#fafafa;border-radius:8px}
+ .warn{background:#fff4d6;border-left:4px solid #e0a800;padding:8px 10px;border-radius:6px;font-size:14px}
+ select{font-size:15px;padding:6px}
+ small{color:#666}
+</style></head><body>
+<header>🪟 Curtain plan <small style="color:#cfe">(all sizes in cm)</small></header>
+<div id="tabs"></div>
+<main id="app"></main>
+<script src="windows.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+let cur=0;
+const state=WINDOWS.map(()=>({rodAbove:10,over:20,style:"short",full:2}));
+function tabs(){
+  $('#tabs').innerHTML=WINDOWS.map((w,i)=>`<button class="${i==cur?'on':''}" onclick="cur=${i};render()">${w.name}</button>`).join('');
+}
+function calc(w,s){
+  const top=w.ceiling-w.gap, bottom=top-w.h;           // heights from floor
+  const maxAbove=Math.max(w.gap-3,0);
+  const above=Math.min(s.rodAbove,maxAbove);
+  let rod=top+above, tall=false;
+  if(s.style==="ceiling"){rod=w.ceiling-4;tall=true;}
+  const endY={short:bottom-5, floor:1, ceiling:1}[s.style];
+  const endY2=s.style==="ceiling"?1:endY;
+  const len=rod-endY2;
+  const rodW=w.w+2*s.over;
+  const fabric=rodW*s.full;
+  return {top,bottom,rod,len,rodW,fabric,above,panel:fabric/2};
+}
+function svg(w,s,c){
+  const pad=60, W=Math.max(rodWall(w,c),0), H=w.ceiling;
+  const vbW=W+pad*2, vbH=H+60;
+  const x0=pad, cx=x0+W/2, wx=cx-w.w/2;
+  const y=h=>20+(H-h);                                    // floor-height -> svg y
+  const rodY=y(c.rod), endY=y(s.style==="short"?c.bottom-5:1);
+  const rl=cx-c.rodW/2, rr=cx+c.rodW/2, pw=c.rodW/2;
+  let out=`<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">`;
+  out+=`<rect x="${x0}" y="20" width="${W}" height="${H}" fill="#ece7dc" stroke="#888"/>`;
+  out+=`<rect x="${wx}" y="${y(c.top)}" width="${w.w}" height="${w.h}" fill="#bfe0f0" stroke="#8a5a1f" stroke-width="4"/>`;
+  out+=`<rect x="${wx-5}" y="${y(c.bottom)}" width="${w.w+10}" height="4" fill="#8a5a1f"/>`;
+  // radiator hint under window
+  out+=`<rect x="${cx-w.w*0.35}" y="${y(c.bottom-15)}" width="${w.w*0.7}" height="${Math.min(60,c.bottom-18)}" fill="#c9ccd0" stroke="#777" opacity=".8"/>`;
+  out+=`<text x="${cx}" y="${y(c.bottom-15)+Math.min(60,c.bottom-18)/2+4}" text-anchor="middle" font-size="12" fill="#444">radiator (approx.)</text>`;
+  // curtains
+  for(const [px] of [[rl],[cx]]) out+=`<rect x="${px}" y="${rodY}" width="${pw}" height="${endY-rodY}" fill="#52796f" fill-opacity=".55" stroke="#2f5d50"/>`;
+  out+=`<line x1="${rl-6}" x2="${rr+6}" y1="${rodY}" y2="${rodY}" stroke="#222" stroke-width="4"/>`;
+  out+=`<line x1="${x0}" x2="${x0+W}" y1="${y(0)}" y2="${y(0)}" stroke="#444" stroke-width="3"/>`;
+  // dimensions
+  const dim=(x,ya,yb,t)=>`<line x1="${x}" x2="${x}" y1="${ya}" y2="${yb}" stroke="#c0392b"/><text x="${x-4}" y="${(ya+yb)/2}" font-size="13" fill="#c0392b" text-anchor="end" transform="rotate(-90 ${x-4} ${(ya+yb)/2})" dy="-2">${t}</text>`;
+  out+=dim(x0+14,20,y(0),`ceiling ${w.ceiling}`);
+  out+=dim(x0+34,y(c.top),y(c.bottom),`window ${w.h}`);
+  out+=dim(x0+54,20,y(c.top),`gap ${w.gap}`);
+  out+=`<text x="${cx}" y="${y(c.bottom)+ -(-22)}" text-anchor="middle" font-size="13" fill="#c0392b" dy="${-(w.h)-w.gap-0}" style="display:none"></text>`;
+  out+=`<text x="${cx}" y="${y(c.top)-6-(c.rod-c.top)-8}" text-anchor="middle" font-size="14" fill="#c0392b">rod ${c.rodW} · window ${w.w}</text>`;
+  out+=`<text x="${rr+8}" y="${rodY+4}" font-size="13" fill="#222">rod @ ${Math.round(c.rod)}</text>`;
+  return out+`</svg>`;
+}
+function rodWall(w,c){return Math.max(w.w+120, c.rodW+80);}
+function render(){
+  tabs();
+  const w=WINDOWS[cur], s=state[cur], c=calc(w,s);
+  const lenNote={
+    short:"Stops ~5 cm below the sill: clears the radiator so heat isn't blocked.",
+    floor:"Floor-length (1 cm above floor): covers the radiator and traps its heat; keep curtains away from it or use a blind.",
+    ceiling:"Rod near the ceiling (4 cm below): makes the room look taller; floor-length."
+  }[s.style];
+  $('#app').innerHTML=`
+  <div class="card"><h2 style="margin:0 0 6px">${w.name}</h2><small>${w.note||''}</small></div>
+  <div class="card"><div class="grid">
+    <div class="stat">Ceiling<b>${w.ceiling}</b></div>
+    <div class="stat">Window height<b>${w.h}</b></div>
+    <div class="stat">Window length<b>${w.w}</b></div>
+    <div class="stat">Gap top→ceiling<b>${w.gap}</b></div>
+    <div class="stat">Window bottom (from floor)<b>${c.bottom}</b></div>
+  </div></div>
+  <div class="card"><h3 style="margin-top:0">What to buy</h3>
+   <div class="grid">
+    <div class="stat">Rod / track length<b>${Math.round(c.rodW)}</b></div>
+    <div class="stat">Rod height from floor<b>${Math.round(c.rod)}</b></div>
+    <div class="stat">Curtain length (rod to hem)<b>${Math.round(c.len)}</b></div>
+    <div class="stat">Fabric width total<b>${Math.round(c.fabric)}</b></div>
+    <div class="stat">Per panel (2 panels)<b>${Math.round(c.panel)}</b></div>
+   </div>
+   <p class="warn">${lenNote}<br>Curtain length is measured from the rod; with rings/hooks, add about 2–4 cm to the hanging drop of the fabric and check the product's "to the top of the heading".</p>
+  </div>
+  <div class="card"><label>Style
+    <select onchange="state[cur].style=this.value;render()">
+      <option value="short" ${s.style=='short'?'selected':''}>Short – to just below the sill</option>
+      <option value="floor" ${s.style=='floor'?'selected':''}>Floor-length</option>
+      <option value="ceiling" ${s.style=='ceiling'?'selected':''}>Floor-length, rod near ceiling</option>
+    </select></label>
+   <label>Rod above window top: <b>${Math.round(c.above)}</b> cm (max ${Math.max(w.gap-3,0)})
+    <input type="range" min="3" max="${Math.max(w.gap-3,3)}" value="${s.rodAbove}" oninput="state[cur].rodAbove=+this.value;render()"></label>
+   <label>Rod extends past window each side: <b>${s.over}</b> cm
+    <input type="range" min="5" max="40" value="${s.over}" oninput="state[cur].over=+this.value;render()"></label>
+   <label>Fullness (fabric width ÷ rod): <b>${s.full}×</b>
+    <input type="range" min="1.5" max="2.5" step="0.1" value="${s.full}" oninput="state[cur].full=+this.value;render()"></label>
+  </div>
+  <div class="card">${svg(w,s,c)}<small>To scale. Green = curtains, grey = radiator (position approximate).</small></div>
+  ${w.photo?`<div class="card"><img src="${w.photo}" alt="${w.name} window"></div>`:''}`;
+}
+render();
+</script></body></html>
