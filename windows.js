@@ -4,4 +4,6 @@
 const WINDOWS = [
   { name: "Bedroom", ceiling: 249, h: 129, w: 208, gap: 31, photo: "photos/bedroom.jpg",
     note: "3-pane wooden window in a deep recess, wooden sill, radiator below." },
+  { name: "Living room 1", ceiling: 249, h: 129, w: 213, gap: 31.5, photo: "photos/living-room-1.jpg",
+    note: "3-pane wooden window, wooden sill, radiator below. Door close to the left of the window." },
 ];
